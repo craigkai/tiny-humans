@@ -4,8 +4,6 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
 
-    <script type="text/javascript" src="humans.js"></script>
-
     <title>Rust + Rocket = Tiny Humans</title>
 
     <style>
@@ -19,23 +17,21 @@
     </style>
 
   </head>
-  <body>
-    <script>
-      {% for human in humans %}
-        var personSVG = drawPerson();
-
-        {# Create our new element #}
-        var newPerson = document.createElement('svg');
-        newPerson.innerHTML = personSVG;
-        newPerson.className = 'human';
-
-        newPerson.style.left = "{{human.position[0]}}px";
-        newPerson.style.top = "{{human.position[1]}}px";
-
-        {# Insert into the DOM #}
-        document.body.appendChild( newPerson );
-      {% endfor %}
-    </script>
-
+  <body id="TinyHumans">
   </body>
+  <script type="text/javascript" src="humans.js"></script>
+  <script>
+    {% for human in humans %}
+      var personSVG = drawPerson();
+
+      var newPerson = document.createElement('svg');
+      newPerson.innerHTML = personSVG;
+      newPerson.className = 'human';
+
+      newPerson.style.left = "{{human.x}}px";
+      newPerson.style.top = "{{human.y}}px";
+
+      document.body.appendChild( newPerson );
+    {% endfor %}
+  </script>
 </html>
