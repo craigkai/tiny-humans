@@ -18,11 +18,12 @@
 
   </head>
   <body id="TinyHumans">
+    <a href="#" onclick="clearHumans(event)">Clear</a>
   </body>
   <script type="text/javascript" src="humans.js"></script>
   <script>
     {% for human in humans %}
-      drawPerson({{human.x}}, {{human.y}});
+      drawPerson({{[human.id, human.x, human.y]}});
     {% endfor %}
   </script>
 </html>

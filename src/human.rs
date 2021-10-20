@@ -1,5 +1,6 @@
 use rocket::serde::json::{Json, Value, json};
 use rocket::serde::{Serialize, Deserialize};
+use rusqlite::NO_PARAMS;
 
 #[path = "database.rs"]
 pub mod database;
@@ -38,18 +39,33 @@ pub async fn get() -> Value {
 
 #[allow(dead_code)]
 #[post("/", format = "application/json", data = "<human>")]
-pub async fn new(human: Json<Human>) {
+pub async fn new(human: Json<Human>) -> Value {
+  // Adds record into db and returns current db
+  // TODO: Don't grab all rows, just the newest
   let db_connection = database::db();
   db_connection
     .execute(
       "INSERT INTO humans (x, y) VALUES (?1, ?2);",
       &[&human.x, &human.y]
   ).unwrap();
+
+  json!(get().await)
+}
+
+#[allow(dead_code)]
+#[delete("/")]
+pub async fn clear() {
+  let db_connection = database::db();
+  db_connection
+    .execute(
+      "DELETE FROM humans;",
+      NO_PARAMS
+  ).unwrap();
 }
 
 #[allow(dead_code)]
 pub fn stage() -> rocket::fairing::AdHoc {
   rocket::fairing::AdHoc::on_ignite("JSON", |rocket| async {
-    rocket.mount("/humans", routes![get, new])
+    rocket.mount("/humans", routes![get, new, clear])
   })
 }
