@@ -1,3 +1,7 @@
+// TODO: Use this to color our human so you can maybe
+// TODO: tell if you created them.
+const color = ['red', 'blue', 'green'][Math.floor(Math.random() * 2)];
+
 function clearHumans(event) {
   if (event.stopPropagation) {
     event.stopPropagation();
