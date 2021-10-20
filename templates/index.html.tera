@@ -22,16 +22,7 @@
   <script type="text/javascript" src="humans.js"></script>
   <script>
     {% for human in humans %}
-      var personSVG = drawPerson();
-
-      var newPerson = document.createElement('svg');
-      newPerson.innerHTML = personSVG;
-      newPerson.className = 'human';
-
-      newPerson.style.left = "{{human.x}}px";
-      newPerson.style.top = "{{human.y}}px";
-
-      document.body.appendChild( newPerson );
+      drawPerson({{human.x}}, {{human.y}});
     {% endfor %}
   </script>
 </html>

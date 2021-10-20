@@ -36,6 +36,7 @@ pub async fn get() -> Value {
   json!(humans)
 }
 
+#[allow(dead_code)]
 #[post("/", format = "application/json", data = "<human>")]
 pub async fn new(human: Json<Human>) {
   let db_connection = database::db();
@@ -46,6 +47,7 @@ pub async fn new(human: Json<Human>) {
   ).unwrap();
 }
 
+#[allow(dead_code)]
 pub fn stage() -> rocket::fairing::AdHoc {
   rocket::fairing::AdHoc::on_ignite("JSON", |rocket| async {
     rocket.mount("/humans", routes![get, new])
