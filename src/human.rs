@@ -1,6 +1,7 @@
 use rocket::serde::json::{Json, Value, json};
 use rocket::serde::{Serialize, Deserialize};
 use rusqlite::NO_PARAMS;
+use rusqlite::types::ToSql;
 
 #[path = "database.rs"]
 pub mod database;
@@ -10,7 +11,8 @@ pub struct Human {
   pub id: i64,
   pub x: i32,
   pub y: i32,
-  pub pose: i32
+  pub pose: i32,
+  pub color: String
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -21,7 +23,7 @@ pub struct Humans {
 #[get("/")]
 pub async fn get() -> Value {
   let db_connection = database::db();
-  let mut statement = db_connection.prepare("select id, x, y, pose from humans;").unwrap();
+  let mut statement = db_connection.prepare("select id, x, y, pose, color from humans;").unwrap();
 
   let humans_iter = statement.query_map(rusqlite::NO_PARAMS, |row| {
     Ok(Human {
@@ -29,6 +31,7 @@ pub async fn get() -> Value {
         x: row.get(1)?,
         y: row.get(2)?,
         pose: row.get(3)?,
+        color: row.get(4)?
     })
   }).unwrap();
 
@@ -42,16 +45,34 @@ pub async fn get() -> Value {
 #[allow(dead_code)]
 #[post("/", format = "application/json", data = "<human>")]
 pub async fn new(human: Json<Human>) -> Value {
-  // Adds record into db and returns current db
-  // TODO: Don't grab all rows, just the newest
+  // Adds record into db and returns the new row
+
   let db_connection = database::db();
   db_connection
     .execute(
-      "INSERT INTO humans (x, y, pose) VALUES (?1, ?2, ?3);",
-      &[&human.x, &human.y, &human.pose]
+      "INSERT INTO humans (color, x, y, pose) VALUES (?1, ?2, ?3, ?4);",
+      &[&human.color as &dyn ToSql, &human.x, &human.y, &human.pose]
   ).unwrap();
 
-  json!(get().await)
+  let id = db_connection.last_insert_rowid();
+
+  let mut stmt = db_connection.prepare("SELECT id, x, y, pose, color FROM humans WHERE id=:id;").unwrap();
+  let human_iter = stmt.query_map_named(&[(":id", &id.to_string())], |row| {
+    Ok(Human {
+      id: row.get(0)?,
+      x: row.get(1)?,
+      y: row.get(2)?,
+      pose: row.get(3)?,
+      color: row.get(4)?
+    })
+  }).unwrap();
+
+  let mut res = Vec::new();
+  for human in human_iter {
+    res.push( human.unwrap() );
+    break;
+  }
+  json!(res.pop())
 }
 
 #[allow(dead_code)]

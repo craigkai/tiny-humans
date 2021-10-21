@@ -8,21 +8,7 @@ pub mod frontend;
 
 #[rocket::main]
 async fn main() {
-  {
-    let db_connection = database::db();
-
-    db_connection
-        .execute(
-            "create table if not exists humans (
-                id integer primary key,
-                x i32 not null,
-                y i32 not null,
-                pose i32 not null
-            );",
-            rusqlite::NO_PARAMS,
-        )
-        .unwrap();
-  }
+  database::create();
 
   if let Err(e) = rocket::build()
       .attach(human::stage())
