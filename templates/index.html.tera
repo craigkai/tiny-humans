@@ -46,6 +46,7 @@
       .human {
         position: absolute;
         overflow: hidden;
+        width: -moz-fit-content;
       }
     </style>
 
