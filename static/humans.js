@@ -76,7 +76,8 @@ document.addEventListener("click", async function(evnt) {
 });
 
 function drawPerson(human) {
-  const personSVG = poses[human[3]];
+  let personSVG = poses[human[3]];
+  personSVG = personSVG.replace(`Person${color}`, `Person${human[4]}`);
 
   var newPerson = document.createElement('svg');
   newPerson.innerHTML = personSVG;
