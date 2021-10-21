@@ -7,8 +7,15 @@
     <title>Rust + Rocket = Tiny Humans</title>
 
     <style>
+      html,body {
+        height: 100%;
+        margin: 0;
+        overflow: hidden;
+     }
+
       body {
         background-image: url('paper.jpg');
+        overflow: hidden;
       }
 
       .PersonBlue {
@@ -25,6 +32,7 @@
 
       .chat {
         position: absolute;
+        overflow: hidden;
       }
 
       .message {
@@ -32,10 +40,12 @@
         left: 50%;
         top: 50%;
         z-index: 99;
+        overflow: hidden;
       }
 
       .human {
         position: absolute;
+        overflow: hidden;
       }
     </style>
 
