@@ -44,9 +44,4 @@
     <button class="message" onclick="clearHumans(event)">Clear</button>
   </body>
   <script type="text/javascript" src="humans.js"></script>
-  <script>
-    {% for human in humans %}
-      drawPerson({{[human.id, human.x, human.y, human.pose]}});
-    {% endfor %}
-  </script>
 </html>

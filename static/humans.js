@@ -15,6 +15,10 @@ async function initializeHumans() {
   let res = await fetch('/humans');
   res = await res.json();
   humans = res.humans;
+
+  humans.forEach((human) => {
+    drawPerson([human.id, human.x, human.y, human.pose, human.color]);
+  });
 }
 initializeHumans();
 
@@ -58,7 +62,7 @@ document.addEventListener("click", async function(evnt) {
     humans.push( resp );
 
     let human = humans.pop();
-    drawPerson([human.id, human.x, human.y, human.pose]);
+    drawPerson([human.id, human.x, human.y, human.pose, human.color]);
 });
 
 function drawPerson(human) {
