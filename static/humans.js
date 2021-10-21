@@ -12,17 +12,19 @@ const poses = {
 
 let humans = [];
 async function initializeHumans() {
-  document.querySelectorAll('.human').forEach(function(a){
-    a.remove()
-  });
+  let res = await fetch('/humans');
+  res = await res.json();
+  humans = res.humans;
 
   document.querySelectorAll('.chat').forEach(function(a){
     a.remove()
   });
 
-  let res = await fetch('/humans');
-  res = await res.json();
-  humans = res.humans;
+  document.querySelectorAll('.human').forEach(function(a){
+    if ( humans.find(o => o.id === a.id) ) {
+      a.remove()
+    }
+  });
 
   humans.forEach((human) => {
     drawPerson([human.id, human.x, human.y, human.pose, human.color]);
