@@ -21,7 +21,7 @@ async function initializeHumans() {
   });
 
   document.querySelectorAll('.human').forEach(function(a){
-    if ( humans.find(o => o.id === a.id) ) {
+    if ( !humans.find(o => o.id === a.id) ) {
       a.remove()
     }
   });
@@ -129,6 +129,7 @@ var timer = setInterval(toggleTalk, 1000);
 
 // Subscribe to the event source at `uri` with exponential backoff reconnect.
 function subscribe(uri) {
+  let retryTime = 1;
   function connect(uri) {
     const events = new EventSource(uri);
 
@@ -136,6 +137,20 @@ function subscribe(uri) {
       const msg = JSON.parse(ev.data);
       if (!msg.update) return;
       initializeHumans();
+    });
+
+    events.addEventListener("open", () => {
+      console.log(`connected to event stream at ${uri}`);
+      retryTime = 1;
+    });
+
+    events.addEventListener("error", () => {
+      events.close();
+
+      let timeout = retryTime;
+      retryTime = Math.min(64, retryTime * 2);
+      console.log(`connection lost. attempting to reconnect in ${timeout}s`);
+      setTimeout(() => connect(uri), (() => timeout * 1000)());
     });
   }
   connect(uri);
