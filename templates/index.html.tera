@@ -11,6 +11,10 @@
         background-image: url('paper.jpg');
       }
 
+      .chat {
+        position: absolute;
+      }
+
       .message {
         position: absolute;
         left: 50%;

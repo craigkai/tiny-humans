@@ -10,7 +10,14 @@ const poses = {
 // TODO: Use this to color our human so you can maybe
 // TODO: tell if you created them.
 const color = ['red', 'blue', 'green'][Math.floor(Math.random() * 2)];
+
 let humans = [];
+async function initializeHumans() {
+  let res = await fetch('/humans');
+  res = await res.json();
+  humans = res.humans;
+}
+initializeHumans();
 
 function clearHumans(event) {
   if (event.stopPropagation) {
@@ -24,6 +31,11 @@ function clearHumans(event) {
   document.querySelectorAll('.human').forEach(function(a){
     a.remove()
   });
+
+  document.querySelectorAll('.chat').forEach(function(a){
+    a.remove()
+  });
+
   humans = [];
 }
 
@@ -64,13 +76,35 @@ function drawPerson(human) {
   document.body.appendChild( newPerson );
 }
 
+const blurbs = [
+  'How are we doing?',
+  'Help I am trapped here!'
+];
+
+function getTalkHTML() {
+  let text = blurbs[Math.floor(Math.random() * ( blurbs.length ))];
+  return '<div>'+text+'</div>';
+}
+
 // Handle our random talking
 function toggleTalk() {
-  var timeArray = new Array(20000, 3000, 1500, 2500, 2000, 3000, 10000, 15000);
+  var timeArray = new Array(8000, 9000, 3500, 7500);
 
   if ( humans.length ) {
-    let human = humans[Math.floor(Math.random() * ( humans.length - 1 ))];
-    // TODO Add some words to [human.x, human.y] location
+    let human = humans[Math.floor(Math.random() * ( humans.length ))];
+
+    let blurb = document.createElement('div');
+    blurb.innerHTML = getTalkHTML();
+    blurb.className = 'chat';
+
+    blurb.style.left = human.x-20+"px";
+    blurb.style.top = human.y-10+"px";
+
+    document.querySelectorAll('.chat').forEach(function(a){
+      a.remove()
+    });
+
+    document.body.appendChild( blurb );
   }
 
   clearInterval(timer);
