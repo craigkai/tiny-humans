@@ -6,7 +6,9 @@ use rusqlite::NO_PARAMS;
 use rusqlite::ToSql;
 
 pub fn db() -> rusqlite::Connection {
-  Connection::open("data.sqlite").unwrap()
+  let db_connection = Connection::open("data.sqlite").unwrap();
+  let _journal_mode = db_connection.pragma_update(None, "journal_mode", &"WAL");
+  db_connection
 }
 
 #[allow(dead_code)]

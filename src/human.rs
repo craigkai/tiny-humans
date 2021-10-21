@@ -10,7 +10,6 @@ use rocket::tokio::sync::broadcast::{Sender, error::RecvError};
 #[path = "database.rs"]
 pub mod database;
 
-
 #[derive(Debug, Clone, FromForm, Serialize, Deserialize)]
 #[cfg_attr(test, derive(PartialEq, UriDisplayQuery))]
 #[serde(crate = "rocket::serde")]
