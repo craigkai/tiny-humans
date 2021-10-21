@@ -9,7 +9,8 @@ pub mod database;
 pub struct Human {
   pub id: i64,
   pub x: i32,
-  pub y: i32
+  pub y: i32,
+  pub pose: i32
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -20,13 +21,14 @@ pub struct Humans {
 #[get("/")]
 pub async fn get() -> Value {
   let db_connection = database::db();
-  let mut statement = db_connection.prepare("select id, x, y from humans;").unwrap();
+  let mut statement = db_connection.prepare("select id, x, y, pose from humans;").unwrap();
 
   let humans_iter = statement.query_map(rusqlite::NO_PARAMS, |row| {
     Ok(Human {
         id: row.get(0)?,
         x: row.get(1)?,
         y: row.get(2)?,
+        pose: row.get(3)?,
     })
   }).unwrap();
 
@@ -45,8 +47,8 @@ pub async fn new(human: Json<Human>) -> Value {
   let db_connection = database::db();
   db_connection
     .execute(
-      "INSERT INTO humans (x, y) VALUES (?1, ?2);",
-      &[&human.x, &human.y]
+      "INSERT INTO humans (x, y, pose) VALUES (?1, ?2, ?3);",
+      &[&human.x, &human.y, &human.pose]
   ).unwrap();
 
   json!(get().await)

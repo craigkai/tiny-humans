@@ -16,7 +16,8 @@ async fn main() {
             "create table if not exists humans (
                 id integer primary key,
                 x i32 not null,
-                y i32 not null
+                y i32 not null,
+                pose i32 not null
             );",
             rusqlite::NO_PARAMS,
         )
