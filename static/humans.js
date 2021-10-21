@@ -12,6 +12,14 @@ const poses = {
 
 let humans = [];
 async function initializeHumans() {
+  document.querySelectorAll('.human').forEach(function(a){
+    a.remove()
+  });
+
+  document.querySelectorAll('.chat').forEach(function(a){
+    a.remove()
+  });
+
   let res = await fetch('/humans');
   res = await res.json();
   humans = res.humans;
@@ -115,3 +123,20 @@ function toggleTalk() {
 }
 
 var timer = setInterval(toggleTalk, 1000);
+
+// Subscribe to the event source at `uri` with exponential backoff reconnect.
+function subscribe(uri) {
+  function connect(uri) {
+    const events = new EventSource(uri);
+
+    events.addEventListener("message", (ev) => {
+      const msg = JSON.parse(ev.data);
+      if (!msg.update) return;
+      initializeHumans();
+    });
+  }
+  connect(uri);
+}
+
+// Subscribe to server-sent events.
+subscribe("/events");
