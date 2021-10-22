@@ -1,13 +1,9 @@
+use std::collections::HashMap;
 use rocket_dyn_templates::Template;
-
-#[path = "human.rs"]
-mod human;
-
-use human::get;
 
 #[get("/")]
 pub async fn index() -> Template {
-  let humans = get().await;
+  let context = HashMap::<String, String>::new();
 
-  Template::render("index", &humans)
+  Template::render("index", context)
 }

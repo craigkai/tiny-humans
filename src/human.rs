@@ -1,6 +1,5 @@
 use rocket::serde::json::{Json, Value, json};
 use rocket::serde::{Serialize, Deserialize};
-use rusqlite::NO_PARAMS;
 use rusqlite::types::ToSql;
 use rocket::response::stream::{EventStream, Event};
 use rocket::tokio::select;
@@ -59,7 +58,7 @@ pub async fn get() -> Value {
   let db_connection = database::db();
   let mut statement = db_connection.prepare("select id, x, y, pose, color from humans;").unwrap();
 
-  let humans_iter = statement.query_map(rusqlite::NO_PARAMS, |row| {
+  let humans_iter = statement.query_map([], |row| {
     Ok(Human {
         id: row.get(0)?,
         x: row.get(1)?,
@@ -91,7 +90,7 @@ pub async fn new(human: Json<Human>, queue: &State<Sender<Message>>) -> Value {
   let id = db_connection.last_insert_rowid();
 
   let mut stmt = db_connection.prepare("SELECT id, x, y, pose, color FROM humans WHERE id=:id;").unwrap();
-  let human_iter = stmt.query_map_named(&[(":id", &id.to_string())], |row| {
+  let human_iter = stmt.query_map(&[(":id", &id.to_string())], |row| {
     Ok(Human {
       id: row.get(0)?,
       x: row.get(1)?,
@@ -117,7 +116,7 @@ pub async fn clear(queue: &State<Sender<Message>>) {
   db_connection
     .execute(
       "DELETE FROM humans;",
-      NO_PARAMS
+      []
   ).unwrap();
   let _res = queue.send(Message{update: true});
 }

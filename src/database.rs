@@ -1,8 +1,6 @@
 use rusqlite::Connection;
 
 #[allow(unused_imports)]
-use rusqlite::NO_PARAMS;
-#[allow(unused_imports)]
 use rusqlite::ToSql;
 
 pub fn db() -> rusqlite::Connection {
@@ -24,7 +22,7 @@ pub fn create() {
             pose i32 not null,
             color TEXT not null
         );",
-        rusqlite::NO_PARAMS,
+        [],
     ).unwrap();
 }
 
@@ -38,7 +36,7 @@ fn grab_new_row() {
       y i32 not null,
       pose i32 not null,
       color TEXT not null
-  );", NO_PARAMS).expect("Creation failure");
+  );", []).expect("Creation failure");
 
     let color = "blue".to_string();
     conn.execute(
