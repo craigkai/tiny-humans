@@ -18,17 +18,11 @@
         overflow: hidden;
       }
 
-      .PersonBlue {
-        filter: invert(12%) sepia(100%) saturate(4004%) hue-rotate(241deg) brightness(100%) contrast(150%);
-      }
-
-      .PersonRed {
-        filter: invert(24%) sepia(96%) saturate(7498%) hue-rotate(359deg) brightness(105%) contrast(109%);
-      }
-
-      .PersonGreen {
-        filter: invert(48%) sepia(79%) saturate(2476%) hue-rotate(86deg) brightness(118%) contrast(119%);
-      }
+      {% for key, value in colors %}
+        .{{key}} {
+          filter: {{value}}
+        }
+      {% endfor %}
 
       .chat {
         position: absolute;
