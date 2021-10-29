@@ -17,3 +17,8 @@ pub async fn index() -> Template {
   context.insert("colors".to_string(), json!(colors()));
   Template::render("index", context)
 }
+
+#[test]
+fn test_colors() {
+  assert_eq!(colors().len(), 3);
+}
