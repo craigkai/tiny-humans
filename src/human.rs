@@ -1,10 +1,10 @@
-use rocket::serde::json::{Json, Value, json};
-use rocket::serde::{Serialize, Deserialize};
-use rusqlite::types::ToSql;
-use rocket::response::stream::{EventStream, Event};
+use rocket::response::stream::{Event, EventStream};
+use rocket::serde::json::{json, Json, Value};
+use rocket::serde::{Deserialize, Serialize};
 use rocket::tokio::select;
-use rocket::{State, Shutdown};
-use rocket::tokio::sync::broadcast::{Sender, error::RecvError};
+use rocket::tokio::sync::broadcast::{error::RecvError, Sender};
+use rocket::{Shutdown, State};
+use rusqlite::types::ToSql;
 
 #[path = "database.rs"]
 pub mod database;
@@ -13,7 +13,7 @@ pub mod database;
 #[cfg_attr(test, derive(PartialEq, UriDisplayQuery))]
 #[serde(crate = "rocket::serde")]
 pub struct Message {
-    pub update: bool
+    pub update: bool,
 }
 
 // Returns an infinite stream of server-sent events. Each event is a message
@@ -41,89 +41,93 @@ pub async fn events(queue: &State<Sender<Message>>, mut end: Shutdown) -> EventS
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Human {
-  pub id: i64,
-  pub x: i32,
-  pub y: i32,
-  pub pose: i32,
-  pub color: String
+    pub id: i64,
+    pub x: i32,
+    pub y: i32,
+    pub pose: i32,
+    pub color: String,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Humans {
-  pub humans: Vec<Human>
+    pub humans: Vec<Human>,
 }
 
 #[get("/")]
 pub async fn get() -> Value {
-  let db_connection = database::db();
-  let mut statement = db_connection.prepare("select id, x, y, pose, color from humans;").unwrap();
+    let db_connection = database::db();
+    let mut statement = db_connection
+        .prepare("select id, x, y, pose, color from humans;")
+        .unwrap();
 
-  let humans_iter = statement.query_map([], |row| {
-    Ok(Human {
-        id: row.get(0)?,
-        x: row.get(1)?,
-        y: row.get(2)?,
-        pose: row.get(3)?,
-        color: row.get(4)?
-    })
-  }).unwrap();
+    let humans_iter = statement
+        .query_map([], |row| {
+            Ok(Human {
+                id: row.get(0)?,
+                x: row.get(1)?,
+                y: row.get(2)?,
+                pose: row.get(3)?,
+                color: row.get(4)?,
+            })
+        })
+        .unwrap();
 
-  let mut humans = Humans{ humans: Vec::new() };
-  for human in humans_iter {
-    humans.humans.push(human.unwrap());
-  }
-  json!(humans)
+    let mut humans = Humans { humans: Vec::new() };
+    for human in humans_iter {
+        humans.humans.push(human.unwrap());
+    }
+    json!(humans)
 }
 
 #[allow(dead_code)]
 #[post("/", format = "application/json", data = "<human>")]
 pub async fn new(human: Json<Human>, queue: &State<Sender<Message>>) -> Value {
-  // Adds record into db and returns the new row
+    // Adds record into db and returns the new row
 
-  let db_connection = database::db();
-  db_connection
-    .execute(
-      "INSERT INTO humans (color, x, y, pose) VALUES (?1, ?2, ?3, ?4);",
-      &[&human.color as &dyn ToSql, &human.x, &human.y, &human.pose]
-  ).unwrap();
+    let db_connection = database::db();
+    db_connection
+        .execute(
+            "INSERT INTO humans (color, x, y, pose) VALUES (?1, ?2, ?3, ?4);",
+            &[&human.color as &dyn ToSql, &human.x, &human.y, &human.pose],
+        )
+        .unwrap();
 
-  let id = db_connection.last_insert_rowid();
+    let id = db_connection.last_insert_rowid();
 
-  let mut stmt = db_connection.prepare("SELECT id, x, y, pose, color FROM humans WHERE id=:id;").unwrap();
-  let human_iter = stmt.query_map(&[(":id", &id.to_string())], |row| {
-    Ok(Human {
-      id: row.get(0)?,
-      x: row.get(1)?,
-      y: row.get(2)?,
-      pose: row.get(3)?,
-      color: row.get(4)?
-    })
-  }).unwrap();
+    let mut stmt = db_connection
+        .prepare("SELECT id, x, y, pose, color FROM humans WHERE id=:id;")
+        .unwrap();
+    let mut human_iter = stmt
+        .query_map(&[(":id", &id.to_string())], |row| {
+            Ok(Human {
+                id: row.get(0)?,
+                x: row.get(1)?,
+                y: row.get(2)?,
+                pose: row.get(3)?,
+                color: row.get(4)?,
+            })
+        })
+        .unwrap();
 
-  let mut res = Vec::new();
-  for human in human_iter {
-    res.push( human.unwrap() );
-    break;
-  }
-  let _res = queue.send(Message{update: true});
-  json!(res.pop())
+    let mut res = Vec::new();
+    if let Some(human) = human_iter.next() {
+        res.push(human.unwrap());
+    }
+    let _res = queue.send(Message { update: true });
+    json!(res.pop())
 }
 
 #[allow(dead_code)]
 #[delete("/")]
 pub async fn clear(queue: &State<Sender<Message>>) {
-  let db_connection = database::db();
-  db_connection
-    .execute(
-      "DELETE FROM humans;",
-      []
-  ).unwrap();
-  let _res = queue.send(Message{update: true});
+    let db_connection = database::db();
+    db_connection.execute("DELETE FROM humans;", []).unwrap();
+    let _res = queue.send(Message { update: true });
 }
 
 #[allow(dead_code)]
 pub fn stage() -> rocket::fairing::AdHoc {
-  rocket::fairing::AdHoc::on_ignite("JSON", |rocket| async {
-    rocket.mount("/humans", routes![get, new, clear])
-  })
+    rocket::fairing::AdHoc::on_ignite("JSON", |rocket| async {
+        rocket.mount("/humans", routes![get, new, clear])
+    })
 }
